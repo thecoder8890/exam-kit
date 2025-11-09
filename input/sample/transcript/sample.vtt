@@ -1,0 +1,41 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:05.000
+Welcome to today's lecture on data structures and algorithms.
+
+2
+00:00:05.500 --> 00:00:12.000
+We'll begin by discussing linear algebra fundamentals, specifically matrices and vectors.
+
+3
+00:00:13.000 --> 00:00:18.500
+A matrix is a rectangular array of numbers arranged in rows and columns.
+
+4
+00:00:19.000 --> 00:00:25.000
+The determinant of a matrix is a scalar value that can be computed from its elements.
+
+5
+00:00:26.000 --> 00:00:32.000
+Moving on to calculus, let's discuss differentiation and the chain rule.
+
+6
+00:00:33.000 --> 00:00:39.000
+The derivative measures the rate of change of a function with respect to its variable.
+
+7
+00:00:40.000 --> 00:00:46.000
+In probability theory, we work with random variables and probability distributions.
+
+8
+00:00:47.000 --> 00:00:53.000
+The expectation or expected value is the average outcome of a random variable.
+
+9
+00:00:54.000 --> 00:01:00.000
+For algorithm analysis, we use Big-O notation to describe computational complexity.
+
+10
+00:01:01.000 --> 00:01:07.000
+Dynamic programming is a technique for solving complex problems by breaking them down.

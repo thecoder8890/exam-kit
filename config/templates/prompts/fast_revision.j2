@@ -1,0 +1,14 @@
+Create a quick revision summary for "{{ topic_name }}" suitable for last-minute exam preparation.
+
+Context:
+{% for chunk in context_chunks %}
+- {{ chunk.text }} [{{ chunk.source }}]
+{% endfor %}
+
+Create a summary with:
+1. Key formula or definition (if applicable)
+2. 3-5 bullet points of essential facts
+3. One worked example or application
+4. Common pitfall to avoid
+
+Revision Summary:
