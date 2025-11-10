@@ -1,0 +1,35 @@
+asr:
+  engine: faster-whisper
+  model: small
+  language: en
+  vad: true
+
+llm:
+  engine: ollama
+  model: llama3.2:8b
+  temperature: 0.2
+  max_tokens: 900
+  system_prompt: "You create exam-ready, cited study notes. Be precise, concise, and grounded in sources."
+
+embedding:
+  model: all-MiniLM-L6-v2
+  dim: 384
+  batch_size: 32
+
+retrieval:
+  top_k: 8
+  max_context_tokens: 2000
+
+pdf:
+  engine: typst
+  theme: classic
+  font_size: 11
+  include_appendix: true
+
+diagrams:
+  graphviz: true
+
+offline: true
+
+logging:
+  level: INFO

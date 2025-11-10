@@ -1,0 +1,22 @@
+{
+  "session_id": "demo",
+  "course": "Introduction to Computer Science",
+  "session": "Lecture 5 - Data Structures",
+  "date": "2024-01-15",
+  "inputs": {
+    "video": "input/sample/video/sample.mp4",
+    "transcript": "input/sample/transcript/sample.vtt",
+    "slides": "input/sample/slides/sample.pptx",
+    "exam": "input/sample/exam/sample_exam.pdf",
+    "topics": "input/sample/topics/session_topics.yml"
+  },
+  "metadata": {
+    "instructor": "Dr. Smith",
+    "duration": "90 minutes",
+    "topics_covered": [
+      "Linear Algebra",
+      "Calculus",
+      "Probability"
+    ]
+  }
+}

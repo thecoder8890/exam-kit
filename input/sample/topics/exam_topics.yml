@@ -1,0 +1,46 @@
+exam:
+  title: "Final Examination"
+  date: "2024-06-15"
+  duration: "3 hours"
+  total_marks: 100
+
+topics:
+  - id: linear_algebra
+    name: Linear Algebra
+    marks: 25
+    questions:
+      - Q1a
+      - Q1b
+      - Q2a
+    essential: true
+
+  - id: calculus
+    name: Calculus
+    marks: 30
+    questions:
+      - Q2b
+      - Q3a
+      - Q3b
+    essential: true
+
+  - id: probability
+    name: Probability
+    marks: 20
+    questions:
+      - Q4a
+      - Q4b
+    essential: true
+
+  - id: statistics
+    name: Statistics
+    marks: 15
+    questions:
+      - Q5a
+    essential: false
+
+  - id: algorithms
+    name: Algorithms
+    marks: 10
+    questions:
+      - Q5b
+    essential: false
