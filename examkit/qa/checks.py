@@ -12,14 +12,16 @@ from examkit.utils.math_utils import extract_latex_formulas, validate_latex_form
 
 def check_formula_compilation(content: str, logger: logging.Logger = None) -> Dict[str, Any]:
     """
-    Check if LaTeX formulas in content are valid.
-
-    Args:
-        content: Content with LaTeX formulas.
-        logger: Logger instance.
-
+    Validate LaTeX formulas found in the given content.
+    
+    Extracts LaTeX formulas and reports which formulas failed validation.
+    
     Returns:
-        Dictionary with check results.
+        result (dict): Summary of the check with keys:
+            - total_formulas (int): Number of formulas found.
+            - valid_formulas (int): Number of formulas that passed validation.
+            - invalid_formulas (List[str]): Formulas that failed validation.
+            - passed (bool): `true` if no invalid formulas were found, `false` otherwise.
     """
     formulas = extract_latex_formulas(content)
     invalid_formulas = []
@@ -43,14 +45,18 @@ def check_formula_compilation(content: str, logger: logging.Logger = None) -> Di
 
 def check_internal_links(content: str, logger: logging.Logger = None) -> Dict[str, Any]:
     """
-    Check internal links in markdown content.
-
-    Args:
-        content: Markdown content.
-        logger: Logger instance.
-
+    Verify internal Markdown links point to existing heading anchors.
+    
+    Converts document headings to anchor names by lowercasing and replacing spaces with hyphens, then checks all markdown links of the form [text](#anchor) to identify links whose targets are not present among those anchors.
+    
+    Parameters:
+        content (str): Markdown content to inspect.
+    
     Returns:
-        Dictionary with check results.
+        dict: Result object with keys:
+            - total_links (int): Number of internal links found.
+            - broken_links (List[Tuple[str, str]]): List of tuples (link_text, link_target) for links whose target anchor was not found.
+            - passed (bool): `true` if no broken links were detected, `false` otherwise.
     """
     # Find all markdown links
     link_pattern = r'\[([^\]]+)\]\(#([^)]+)\)'
@@ -86,15 +92,18 @@ def check_keyword_recall(
     logger: logging.Logger = None
 ) -> Dict[str, Any]:
     """
-    Check if required keywords are present in content.
-
-    Args:
-        content: Content to check.
-        required_keywords: List of keywords that should be present.
-        logger: Logger instance.
-
+    Determine which of the required keywords appear in the provided content.
+    
+    Parameters:
+        content (str): Text to search for keywords; matching is case-insensitive.
+        required_keywords (List[str]): Keywords to look for; each keyword is matched as a substring (case-insensitive). An empty list yields 100% coverage.
+    
     Returns:
-        Dictionary with check results.
+        Dict[str, Any]: Result dictionary with keys:
+            - total_keywords (int): Number of keywords checked.
+            - found_keywords (int): Number of keywords found in the content.
+            - missing_keywords (List[str]): Keywords that were not found.
+            - coverage_percentage (float): Percentage of keywords found (0–100).
     """
     content_lower = content.lower()
     missing_keywords = []
@@ -118,14 +127,21 @@ def check_keyword_recall(
 
 def check_citation_presence(content: str, logger: logging.Logger = None) -> Dict[str, Any]:
     """
-    Check if content has proper citations.
-
-    Args:
-        content: Content to check.
-        logger: Logger instance.
-
+    Detects video, slide, and exam citations in the given content.
+    
+    Parameters:
+        content (str): Text to scan for citations; looks for tokens like `[vid ...]`, `[slide ...]`, or `[exam ...]`.
+    
     Returns:
-        Dictionary with check results.
+        dict: {
+            "total_citations": int,        # total number of citation tokens found
+            "has_citations": bool,         # True if any citations were found
+            "citation_types": {            # counts per citation type
+                "video": int,
+                "slides": int,
+                "exam": int
+            }
+        }
     """
     # Find citations [vid ...], [slide ...], [exam ...]
     citation_pattern = r'\[(vid|slide|exam)[^\]]*\]'
@@ -149,14 +165,16 @@ def check_citation_presence(content: str, logger: logging.Logger = None) -> Dict
 
 def check_equation_consistency(content: str, logger: logging.Logger = None) -> Dict[str, Any]:
     """
-    Check if equations use consistent notation.
-
-    Args:
-        content: Content with equations.
-        logger: Logger instance.
-
+    Analyze LaTeX formulas in the provided content to detect potentially inconsistent equation notation.
+    
+    Parameters:
+        content (str): Text containing LaTeX formulas to inspect (inline or display math).
+        
     Returns:
-        Dictionary with check results.
+        result (dict): Summary of the consistency check with keys:
+            - total_symbols (int): Number of unique equation symbols found.
+            - warnings (list): List of human-readable warnings about symbols with potential inconsistent usage.
+            - passed (bool): `true` if no warnings were produced, `false` otherwise.
     """
     from examkit.utils.math_utils import extract_equation_symbols
 
@@ -195,15 +213,14 @@ def run_all_checks(
     logger: logging.Logger = None
 ) -> Dict[str, Any]:
     """
-    Run all QA checks on content.
-
-    Args:
-        content: Content to check.
-        required_keywords: Optional list of required keywords.
-        logger: Logger instance.
-
+    Run a suite of QA checks on the provided content and aggregate their results.
+    
+    Parameters:
+        content (str): Markdown or text content to validate.
+        required_keywords (List[str], optional): If provided, include a keyword-recall check for these terms.
+    
     Returns:
-        Dictionary with all check results.
+        Dict[str, Any]: Aggregated results containing per-check dictionaries for `"formulas"`, `"links"`, `"citations"`, and `"equations"`. If `required_keywords` was supplied, includes a `"keywords"` entry. Contains `"overall_passed"` (bool) which is true only if every check that reports a `passed` field is true.
     """
     if logger:
         logger.info("Running QA checks...")

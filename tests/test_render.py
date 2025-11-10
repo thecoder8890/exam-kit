@@ -58,7 +58,11 @@ More content here.
 
 
 def test_config_loading():
-    """Test configuration loading."""
+    """
+    Verifies that ExamKitConfig.from_yaml correctly loads ASR, LLM, and offline settings from a YAML configuration.
+    
+    Creates a temporary YAML configuration containing `asr.model`, `llm.model`, and `offline`, loads it via `ExamKitConfig.from_yaml`, and asserts the resulting object's fields match the expected values.
+    """
     import tempfile
     import yaml
 

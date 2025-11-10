@@ -17,18 +17,18 @@ def retrieve_context_for_topic(
     logger: logging.Logger = None
 ) -> List[Dict[str, Any]]:
     """
-    Retrieve relevant context chunks for a topic.
-
-    Args:
-        topic: Topic dictionary.
-        model: Embedding model.
-        index: FAISS index.
-        chunks_metadata: Metadata for all chunks.
-        top_k: Number of chunks to retrieve.
-        logger: Logger instance.
-
+    Retrieve context chunks relevant to a topic.
+    
+    Parameters:
+        topic (dict): Topic object with at least a `name` key. May include `description` (str) and `keywords` (List[str]) to enrich the query.
+        model: Embedding model used for similarity search.
+        index: Vector index used for retrieval.
+        chunks_metadata (List[dict]): List of candidate chunk metadata to search over.
+        top_k (int): Maximum number of chunks to return.
+        logger (logging.Logger, optional): Logger for debug messages.
+    
     Returns:
-        List of relevant chunks with metadata.
+        List[dict]: Chunks ranked by relevance to the topic. Each item is a metadata dictionary typically containing fields such as `text`, `source`, and `distance`.
     """
     # Create query from topic
     query = f"{topic['name']} {topic.get('description', '')} {' '.join(topic.get('keywords', []))}"
@@ -44,14 +44,14 @@ def retrieve_context_for_topic(
 
 def deduplicate_chunks(chunks: List[Dict[str, Any]], similarity_threshold: float = 0.95) -> List[Dict[str, Any]]:
     """
-    Remove duplicate or highly similar chunks.
-
-    Args:
-        chunks: List of chunks.
-        similarity_threshold: Threshold for considering chunks as duplicates.
-
+    Remove duplicate chunks by exact text match, preserving the first occurrence order.
+    
+    Parameters:
+        chunks (List[Dict[str, Any]]): Sequence of chunk dictionaries that may contain a "text" field.
+        similarity_threshold (float): Currently unused; kept for API compatibility.
+    
     Returns:
-        Deduplicated chunks.
+        List[Dict[str, Any]]: Deduplicated list where later chunks with the same "text" as an earlier chunk are removed.
     """
     if not chunks:
         return []
@@ -80,14 +80,14 @@ def rank_by_source_diversity(
     prefer_exam: bool = True
 ) -> List[Dict[str, Any]]:
     """
-    Re-rank chunks to promote source diversity.
-
-    Args:
-        chunks: List of chunks with source information.
-        prefer_exam: Whether to prioritize exam-related chunks.
-
+    Reorder a list of chunks to increase diversity of their originating sources.
+    
+    Parameters:
+        chunks (List[Dict[str, Any]]): Chunks containing at least a "source" field.
+        prefer_exam (bool): If True, prioritize sources in the order ["exam", "slides", "transcript", "asr"]; if False, use ["slides", "transcript", "exam", "asr"].
+    
     Returns:
-        Re-ranked chunks.
+        List[Dict[str, Any]]: The input chunks re-ranked by interleaving items from prioritized sources; chunks from sources not in the priority list are appended at the end.
     """
     if not chunks:
         return []
@@ -128,15 +128,17 @@ def filter_by_confidence(
     max_distance: float = 1.0
 ) -> List[Dict[str, Any]]:
     """
-    Filter chunks by distance/confidence score.
-
-    Args:
-        chunks: List of chunks with distance scores.
-        min_distance: Minimum distance threshold.
-        max_distance: Maximum distance threshold.
-
+    Filter chunks to those whose distance score lies within the inclusive range.
+    
+    Chunks missing a "distance" field are treated as having distance 999 and will be excluded unless the range includes that value.
+    
+    Parameters:
+        chunks: Iterable of chunk dictionaries; each chunk's "distance" key is used for filtering.
+        min_distance: Minimum acceptable distance (inclusive).
+        max_distance: Maximum acceptable distance (inclusive).
+    
     Returns:
-        Filtered chunks.
+        Filtered list of chunks whose "distance" is between min_distance and max_distance, inclusive.
     """
     return [
         chunk for chunk in chunks

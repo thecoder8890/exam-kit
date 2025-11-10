@@ -11,13 +11,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 def load_topics(topics_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Load and normalize topics.
-
-    Args:
-        topics_data: List of topic dictionaries.
-
+    Normalize a list of topic dictionaries into a consistent structure.
+    
+    Parameters:
+        topics_data (List[Dict[str, Any]]): List of topic objects. Each object may include
+            the keys `id`, `name`, `keywords`, `weight`, and `description`. If `id` is missing,
+            a fallback ID is derived from `name` (lowercased, spaces replaced with underscores).
+    
     Returns:
-        Normalized topics list.
+        List[Dict[str, Any]]: A list of normalized topic dictionaries, each containing the keys
+        `id`, `name`, `keywords`, `weight`, and `description` with sensible defaults when absent.
     """
     normalized = []
     for topic in topics_data:
@@ -40,18 +43,20 @@ def map_chunks_to_topics(
     logger: logging.Logger = None
 ) -> Dict[str, List[int]]:
     """
-    Map text chunks to topics using embeddings.
-
-    Args:
-        chunks: List of text chunks.
-        topics: List of topics.
-        chunk_embeddings: Embeddings for chunks.
-        topic_embeddings: Embeddings for topics.
-        threshold: Similarity threshold.
-        logger: Logger instance.
-
+    Assigns chunks to topics based on cosine similarity between their embeddings.
+    
+    Compares each chunk embedding to each topic embedding and adds a chunk's index to a topic's list when the cosine similarity is greater than or equal to the threshold.
+    
+    Parameters:
+        chunks: List of chunk dictionaries (used for indexing; chunk content is not inspected).
+        topics: List of topic dictionaries; each must include an "id" key.
+        chunk_embeddings: 2D array of shape (num_chunks, embedding_dim).
+        topic_embeddings: 2D array of shape (num_topics, embedding_dim).
+        threshold (float): Minimum cosine similarity required to assign a chunk to a topic.
+        logger (logging.Logger, optional): If provided, logs the number of chunks mapped per topic.
+    
     Returns:
-        Dictionary mapping topic IDs to chunk indices.
+        Dict[str, List[int]]: Mapping from topic ID to a list of chunk indices assigned to that topic.
     """
     # Calculate similarity matrix
     similarities = cosine_similarity(chunk_embeddings, topic_embeddings)
@@ -78,15 +83,21 @@ def calculate_coverage(
     total_chunks: int
 ) -> List[Dict[str, Any]]:
     """
-    Calculate topic coverage metrics.
-
-    Args:
-        topic_mapping: Mapping of topics to chunk indices.
-        topics: List of topics.
-        total_chunks: Total number of chunks.
-
+    Compute per-topic coverage metrics from a mapping of topic IDs to chunk indices.
+    
+    Parameters:
+        topic_mapping (Dict[str, List[int]]): Mapping from topic ID to list of chunk indices assigned to that topic.
+        topics (List[Dict[str, Any]]): List of topic dictionaries; each must include `"id"` and `"name"`, and may include `"weight"`.
+        total_chunks (int): Total number of chunks considered; when zero or less, coverage percentages are reported as 0.0.
+    
     Returns:
-        List of coverage metrics per topic.
+        List[Dict[str, Any]]: A list of per-topic coverage dictionaries containing:
+            - topic_id (str): The topic's identifier.
+            - name (str): The topic's display name.
+            - chunk_count (int): Number of chunks mapped to the topic.
+            - coverage_percentage (float): Percentage of total_chunks mapped to the topic (0.0–100.0).
+            - weight (float): Topic weight (defaults to 1.0 if missing).
+            - weighted_coverage (float): coverage_percentage multiplied by weight.
     """
     coverage_data = []
 
@@ -113,14 +124,14 @@ def identify_gaps(
     min_coverage: float = 10.0
 ) -> List[str]:
     """
-    Identify topics with insufficient coverage.
-
-    Args:
-        coverage_data: List of coverage metrics.
-        min_coverage: Minimum acceptable coverage percentage.
-
+    Identify topic names whose coverage percentage is below a minimum threshold.
+    
+    Parameters:
+        coverage_data (List[Dict[str, Any]]): Per-topic coverage dictionaries containing at least the keys "name" and "coverage_percentage".
+        min_coverage (float): Coverage percentage threshold; topics with coverage strictly less than this value are considered gaps.
+    
     Returns:
-        List of under-covered topic names.
+        List[str]: Names of topics whose coverage percentage is less than min_coverage.
     """
     gaps = []
     for item in coverage_data:

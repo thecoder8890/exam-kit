@@ -81,13 +81,13 @@ class ExamKitConfig(BaseModel):
     @classmethod
     def from_yaml(cls, path: Path) -> "ExamKitConfig":
         """
-        Load configuration from a YAML file.
-
-        Args:
-            path: Path to the YAML configuration file.
-
+        Create an ExamKitConfig from a YAML file.
+        
+        Parameters:
+            path (Path): Filesystem path to a YAML configuration file.
+        
         Returns:
-            ExamKitConfig instance.
+            ExamKitConfig: Configuration instance populated from the file's contents.
         """
         with open(path, "r") as f:
             data = yaml.safe_load(f)
@@ -95,10 +95,10 @@ class ExamKitConfig(BaseModel):
 
     def to_yaml(self, path: Path) -> None:
         """
-        Save configuration to a YAML file.
-
-        Args:
-            path: Path to save the YAML configuration file.
+        Write the current configuration to the given filesystem path as YAML.
+        
+        Parameters:
+            path (Path): Filesystem path where the YAML file will be written.
         """
         with open(path, "w") as f:
             yaml.dump(self.model_dump(), f, default_flow_style=False, sort_keys=False)

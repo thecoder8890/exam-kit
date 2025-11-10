@@ -15,15 +15,22 @@ from examkit.utils.io_utils import ensure_dir
 
 def parse_pptx(path: Path, cache_dir: Path, logger: logging.Logger) -> List[Dict[str, Any]]:
     """
-    Parse PowerPoint (PPTX) file.
-
-    Args:
-        path: Path to PPTX file.
-        cache_dir: Directory to save extracted images.
-        logger: Logger instance.
-
+    Extract structured slide information from a PPTX file.
+    
+    Parameters:
+        path (Path): Path to the source PPTX file.
+        cache_dir (Path): Directory used to store slide-related cache (e.g., generated image files).
+        logger (logging.Logger): Logger used for progress and warning messages.
+    
     Returns:
-        List of slide dictionaries.
+        List[Dict[str, Any]]: A list of slide dictionaries with the following keys:
+            - source (str): Fixed value "slides".
+            - type (str): Fixed value "pptx".
+            - slide_number (int): 1-based slide index.
+            - title (str): Slide title text if present, otherwise empty string.
+            - content (List[str]): Text blocks from the slide excluding the title.
+            - notes (str): Slide notes text if present, otherwise empty string.
+            - images (List[str]): Filenames (placeholders) for images detected on the slide.
     """
     logger.info(f"Parsing PPTX: {path}")
 
@@ -74,15 +81,12 @@ def parse_pptx(path: Path, cache_dir: Path, logger: logging.Logger) -> List[Dict
 
 def parse_pdf_slides(path: Path, cache_dir: Path, logger: logging.Logger) -> List[Dict[str, Any]]:
     """
-    Parse PDF slides using PyMuPDF.
-
-    Args:
-        path: Path to PDF file.
-        cache_dir: Directory to save extracted images.
-        logger: Logger instance.
-
+    Parse a PDF as a sequence of slide-like dictionaries.
+    
+    When a page has few embedded characters, attempts OCR on a rendered high-resolution image; uses the first non-empty line of page text as the slide title and remaining lines as content. Extracts image references for each page into the `images` list.
+    
     Returns:
-        List of slide dictionaries.
+        List of dictionaries, each with keys: `source`, `type`, `slide_number`, `title`, `content`, and `images`.
     """
     from examkit.ingestion.ocr import extract_text_with_ocr
 

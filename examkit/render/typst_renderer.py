@@ -62,15 +62,17 @@ def compile_with_typst(
     logger: logging.Logger
 ) -> bool:
     """
-    Compile using Typst.
-
-    Args:
-        input_path: Input file path.
-        output_path: Output PDF path.
-        logger: Logger instance.
-
+    Compile the given document to PDF using Typst.
+    
+    If the input is a Markdown file (suffix .md), a temporary Typst wrapper file is written and used for compilation. The function returns False if Typst is not available, if compilation fails, or if a timeout or other error occurs.
+    
+    Parameters:
+        input_path (Path): Path to the source document. If it has a `.md` suffix, it will be wrapped into a `.typ` file before compilation.
+        output_path (Path): Destination path for the generated PDF.
+        logger (logging.Logger): Logger used to record informational and error messages.
+    
     Returns:
-        True if successful, False otherwise.
+        bool: `True` if PDF generation completed successfully, `False` otherwise.
     """
     if not check_typst_installed():
         logger.error("Typst not installed. Install with: brew install typst")
@@ -110,13 +112,13 @@ def compile_with_typst(
 
 def create_typst_wrapper_for_markdown(markdown_path: Path) -> str:
     """
-    Create a Typst wrapper that includes markdown content.
-
-    Args:
-        markdown_path: Path to markdown file.
-
+    Generate a minimal Typst document that embeds the contents of the given Markdown file.
+    
+    Parameters:
+        markdown_path (Path): Path to the Markdown file to convert.
+    
     Returns:
-        Typst content.
+        typst_content (str): A Typst-formatted document string containing converted headings and simple inline formatting.
     """
     with open(markdown_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
@@ -158,16 +160,13 @@ def compile_with_pandoc(
     logger: logging.Logger
 ) -> bool:
     """
-    Compile using Pandoc (fallback).
-
-    Args:
-        input_path: Input markdown file.
-        output_path: Output PDF path.
-        config: Configuration.
-        logger: Logger instance.
-
+    Generate a PDF from the given Markdown input using Pandoc as a fallback engine.
+    
+    Parameters:
+        config (ExamKitConfig): Uses `config.pdf.font_size` to set the document font size (in points).
+    
     Returns:
-        True if successful, False otherwise.
+        `true` if the PDF was generated successfully, `false` otherwise.
     """
     logger.info(f"Compiling with Pandoc: {input_path} -> {output_path}")
 

@@ -12,7 +12,11 @@ class CitationManager:
     """Manages citations for generated content."""
 
     def __init__(self):
-        """Initialize citation manager."""
+        """
+        Initialize the CitationManager's internal state.
+        
+        Sets up an empty list for stored citations and initializes the citation counter to 0.
+        """
         self.citations = []
         self.citation_counter = 0
 
@@ -24,16 +28,16 @@ class CitationManager:
         metadata: Dict[str, Any] = None
     ) -> str:
         """
-        Add a citation and return citation ID.
-
-        Args:
-            source_type: Type of source (video, slide, exam, etc.).
-            source_id: Identifier for the source.
-            content: Content being cited.
-            metadata: Additional metadata.
-
+        Add a citation to the manager and generate a unique citation ID.
+        
+        Parameters:
+            source_type (str): Source kind (e.g., "video", "slide", "exam").
+            source_id (str): Identifier of the source.
+            content (str): The cited content or excerpt.
+            metadata (Dict[str, Any], optional): Additional citation metadata; defaults to empty dict.
+        
         Returns:
-            Citation ID.
+            str: Generated citation ID (e.g., "cite_1").
         """
         self.citation_counter += 1
         citation_id = f"cite_{self.citation_counter}"
@@ -51,13 +55,22 @@ class CitationManager:
 
     def format_citation(self, chunk: Dict[str, Any]) -> str:
         """
-        Format a citation string from a chunk.
-
-        Args:
-            chunk: Chunk dictionary with source information.
-
+        Return a formatted citation label for a content chunk.
+        
+        Parameters:
+            chunk (Dict[str, Any]): Dictionary describing the source. Recognized keys:
+                - "source": source type (e.g., "transcript", "asr", "slides", "exam", or other).
+                - For "transcript"/"asr": optional "start" (seconds) to include a timecode.
+                - For "slides": optional "slide_number".
+                - For "exam": optional "question_id".
+        
         Returns:
-            Formatted citation string.
+            str: A citation string in one of the formats:
+                - "[vid {timecode}]" if a transcript/asr chunk includes a start time.
+                - "[vid]" for transcript/asr without a start time.
+                - "[slide {slide_number}]" for slide chunks.
+                - "[exam {question_id}]" for exam chunks.
+                - "[{source}]" for any other source type.
         """
         source_type = chunk.get("source", "unknown")
 
@@ -84,13 +97,15 @@ class CitationManager:
 
     def format_multiple_citations(self, chunks: List[Dict[str, Any]]) -> str:
         """
-        Format multiple citations from chunks.
-
-        Args:
-            chunks: List of chunks.
-
+        Create a single citation string from multiple chunk descriptors.
+        
+        Formats each chunk using format_citation, removes duplicate formatted citations while preserving their original order, and joins them with a single space.
+        
+        Parameters:
+            chunks (List[Dict[str, Any]]): List of chunk dictionaries describing sources (e.g., transcript, slides, exam).
+        
         Returns:
-            Formatted citation string combining all sources.
+            str: Space-separated string of unique formatted citations in original order.
         """
         citations = []
         for chunk in chunks:
@@ -102,22 +117,23 @@ class CitationManager:
 
     def export_citations(self) -> List[Dict[str, Any]]:
         """
-        Export all citations.
-
+        Retrieve all stored citation records.
+        
         Returns:
-            List of citation dictionaries.
+            List[Dict[str, Any]]: The internal list of citation dictionaries. Each dictionary contains the keys
+            `id`, `type`, `source_id`, `content`, and `metadata`. This returns the actual internal list (not a copy).
         """
         return self.citations
 
     def get_citation_by_id(self, citation_id: str) -> Dict[str, Any]:
         """
-        Get citation by ID.
-
-        Args:
-            citation_id: Citation identifier.
-
+        Retrieve a stored citation by its identifier.
+        
+        Parameters:
+            citation_id (str): The citation identifier to look up.
+        
         Returns:
-            Citation dictionary or None.
+            dict: The citation dictionary if found, or `None` if no matching citation exists.
         """
         for citation in self.citations:
             if citation["id"] == citation_id:
@@ -126,26 +142,28 @@ class CitationManager:
 
     def get_citations_by_type(self, source_type: str) -> List[Dict[str, Any]]:
         """
-        Get all citations of a specific type.
-
-        Args:
-            source_type: Type of source.
-
+        Return all stored citations whose "type" field matches the given source type.
+        
+        Parameters:
+            source_type (str): The citation type to match.
+        
         Returns:
-            List of citations.
+            List[Dict[str, Any]]: List of citation dictionaries whose `"type"` equals `source_type`.
         """
         return [c for c in self.citations if c["type"] == source_type]
 
     def get_citation_count(self) -> int:
         """
-        Get total number of citations.
-
+        Get the number of stored citations.
+        
         Returns:
-            Citation count.
+            int: Number of citations currently tracked.
         """
         return len(self.citations)
 
     def clear(self) -> None:
-        """Clear all citations."""
+        """
+        Remove all stored citations and reset the internal citation counter to zero.
+        """
         self.citations = []
         self.citation_counter = 0

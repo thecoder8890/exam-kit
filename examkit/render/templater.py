@@ -14,13 +14,13 @@ from examkit.config import ExamKitConfig
 
 def setup_jinja_environment(templates_dir: Path = None) -> Environment:
     """
-    Set up Jinja2 environment.
-
-    Args:
-        templates_dir: Directory containing templates.
-
+    Create a Jinja2 Environment configured to load templates from a filesystem directory.
+    
+    Parameters:
+        templates_dir (Path | None): Path to the templates directory. If omitted, defaults to "config/templates".
+    
     Returns:
-        Jinja2 Environment.
+        Environment: A Jinja2 Environment with FileSystemLoader and `trim_blocks` and `lstrip_blocks` enabled.
     """
     if templates_dir is None:
         templates_dir = Path("config/templates")
@@ -40,15 +40,23 @@ def render_markdown_document(
     config: ExamKitConfig
 ) -> str:
     """
-    Render complete markdown document from sections.
-
-    Args:
-        sections: List of content sections.
-        session_id: Session identifier.
-        config: Configuration.
-
+    Builds a complete Markdown document from structured section data for an exam preparation session.
+    
+    Parameters:
+        sections (List[Dict[str, Any]]): Ordered list of section dictionaries. Each section may include keys:
+            - "topic" (str): section title.
+            - "definition" (str): definition text.
+            - "key_formulas" (str): key formulas text.
+            - "derivation" (str): derivation text.
+            - "examples" (str): worked examples text.
+            - "mistakes" (str): common mistakes text.
+            - "revision" (str): quick revision notes.
+            - "citations" (str): optional sources to display with a definition.
+        session_id (str): Identifier to include in the document title.
+        config (ExamKitConfig): Configuration object (used for environment/context; not directly inspected by this function).
+    
     Returns:
-        Rendered markdown content.
+        str: The rendered Markdown document as a single string.
     """
     # Build markdown manually (simple template)
     lines = [
@@ -111,15 +119,17 @@ def render_typst_document(
     config: ExamKitConfig
 ) -> str:
     """
-    Render Typst document from markdown content.
-
-    Args:
-        markdown_content: Markdown content.
-        session_id: Session identifier.
-        config: Configuration.
-
+    Render a Typst document from rendered Markdown content.
+    
+    Builds a Typst preface (theme import and conf block with title and date) and converts common Markdown constructs (headers and simple emphasis) into Typst syntax, producing a complete Typst document.
+    
+    Parameters:
+        markdown_content (str): Markdown text to convert.
+        session_id (str): Session identifier inserted into the document title.
+        config (ExamKitConfig): Configuration used for rendering (controls template/formatting options).
+    
     Returns:
-        Rendered Typst content.
+        str: The complete Typst document content.
     """
     # Convert markdown to Typst format (basic conversion)
     typst_lines = [
@@ -157,14 +167,14 @@ def render_typst_document(
 
 def load_template(template_name: str, templates_dir: Path = None) -> Template:
     """
-    Load a Jinja2 template.
-
-    Args:
-        template_name: Template file name.
-        templates_dir: Templates directory.
-
+    Load a Jinja2 template from the templates directory.
+    
+    Parameters:
+        template_name (str): Name of the template file to load.
+        templates_dir (Path | None): Optional path to the templates directory; when omitted the configured templates directory is used.
+    
     Returns:
-        Loaded template.
+        template (Template): The loaded Jinja2 Template object.
     """
     env = setup_jinja_environment(templates_dir)
     return env.get_template(template_name)

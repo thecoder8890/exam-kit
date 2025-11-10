@@ -14,15 +14,21 @@ except ImportError:
 
 def extract_named_entities(text: str, nlp, logger: logging.Logger = None) -> List[Dict[str, Any]]:
     """
-    Extract named entities from text using spaCy.
-
-    Args:
-        text: Input text.
-        nlp: SpaCy model.
-        logger: Logger instance.
-
+    Extract named entities from text and return them as dictionaries.
+    
+    If spaCy is unavailable (module-level SPACY_AVAILABLE is False), returns an empty list.
+    
+    Parameters:
+        text (str): Text to analyze.
+        nlp: A spaCy language model used to create a Doc for extraction.
+        logger (logging.Logger, optional): If provided, receives a debug message with the count of extracted entities.
+    
     Returns:
-        List of named entities with labels.
+        List[dict]: A list of entity dictionaries, each containing:
+            - "text": the entity string as found in the input,
+            - "label": the entity label (spaCy label string),
+            - "start": start character offset of the entity,
+            - "end": end character offset of the entity.
     """
     if not SPACY_AVAILABLE:
         return []
@@ -46,15 +52,14 @@ def extract_named_entities(text: str, nlp, logger: logging.Logger = None) -> Lis
 
 def clean_and_tokenize(text: str, nlp, remove_stopwords: bool = False) -> List[str]:
     """
-    Clean and tokenize text using spaCy.
-
-    Args:
-        text: Input text.
-        nlp: SpaCy model.
-        remove_stopwords: Whether to remove stopwords.
-
+    Clean and tokenize text into lowercase tokens, removing punctuation and whitespace.
+    
+    Parameters:
+        text (str): Input text to process.
+        remove_stopwords (bool): If True, omit spaCy stopwords from the output.
+    
     Returns:
-        List of tokens.
+        List[str]: Cleaned, tokenized, lowercase tokens. If spaCy is unavailable, returns text.split().
     """
     if not SPACY_AVAILABLE:
         return text.split()
@@ -74,15 +79,16 @@ def clean_and_tokenize(text: str, nlp, remove_stopwords: bool = False) -> List[s
 
 def extract_key_phrases(text: str, nlp, top_n: int = 10) -> List[str]:
     """
-    Extract key noun phrases from text.
-
-    Args:
-        text: Input text.
-        nlp: SpaCy model.
-        top_n: Number of phrases to return.
-
+    Extract noun phrase key phrases from the given text.
+    
+    If spaCy is unavailable, returns an empty list. The returned list contains unique noun phrases found in the text, limited to at most `top_n` items.
+    
+    Parameters:
+        nlp: SpaCy language model used to parse the text.
+        top_n (int): Maximum number of phrases to return.
+    
     Returns:
-        List of key phrases.
+        List of unique noun phrases, limited to `top_n` items.
     """
     if not SPACY_AVAILABLE:
         return []
@@ -100,14 +106,12 @@ def extract_key_phrases(text: str, nlp, top_n: int = 10) -> List[str]:
 
 def lemmatize_text(text: str, nlp) -> str:
     """
-    Lemmatize text using spaCy.
-
-    Args:
-        text: Input text.
-        nlp: SpaCy model.
-
+    Return the input text with each token replaced by its lemma.
+    
+    If spaCy is unavailable, the original text is returned.
+    
     Returns:
-        Lemmatized text.
+        Lemmatized text with tokens' lemmas joined by single spaces.
     """
     if not SPACY_AVAILABLE:
         return text
@@ -119,14 +123,20 @@ def lemmatize_text(text: str, nlp) -> str:
 
 def detect_language_patterns(text: str, nlp) -> Dict[str, Any]:
     """
-    Detect language patterns and structure.
-
-    Args:
-        text: Input text.
-        nlp: SpaCy model.
-
+    Analyze text to extract basic language structure and pattern metrics.
+    
+    Parameters:
+        text (str): Text to analyze.
+        nlp: spaCy language model used to parse the text.
+    
     Returns:
-        Dictionary with language pattern information.
+        patterns (Dict[str, Any]): Mapping with the following keys:
+            - "sentence_count": Number of sentences in the text.
+            - "token_count": Total number of tokens.
+            - "has_questions": `true` if the text contains a question mark, `false` otherwise.
+            - "has_imperatives": `true` if any sentence appears to start with a base-form verb, `false` otherwise.
+            - "noun_phrases": Number of noun phrase chunks.
+            - "entities": Number of named entities detected.
     """
     if not SPACY_AVAILABLE:
         return {}

@@ -11,14 +11,18 @@ from examkit.utils.io_utils import read_json, read_text
 
 def generate_report(session_id: str, logger: logging.Logger) -> Dict[str, Any]:
     """
-    Generate comprehensive report for a session.
-
-    Args:
-        session_id: Session identifier.
-        logger: Logger instance.
-
+    Assemble a session report by collecting coverage CSV, QA notes, and citation JSON from the out/ directory.
+    
+    Parameters:
+        session_id (str): Identifier used to locate out/{session_id}_coverage.csv, out/{session_id}_notes.md, and out/{session_id}_citations.json.
+    
     Returns:
-        Dictionary with report data.
+        dict: Report with keys:
+            - session_id: the provided session identifier.
+            - coverage: list of coverage records (each a dict) loaded from CSV, or empty list.
+            - qa: summary dict with keys `formulas_checked`, `links_verified`, `citations_found`, and `warnings` when QA notes are present, otherwise empty dict.
+            - citations: list loaded from citations JSON, or empty list.
+            - coverage_path: string path to the coverage CSV when present, otherwise None.
     """
     out_dir = Path("out")
 
@@ -65,11 +69,17 @@ def generate_report(session_id: str, logger: logging.Logger) -> Dict[str, Any]:
 
 def export_report_text(report: Dict[str, Any], output_path: Path) -> None:
     """
-    Export report as text file.
-
-    Args:
-        report: Report dictionary.
-        output_path: Output path for text file.
+    Write a human-readable text summary of a report to the given file path.
+    
+    Parameters:
+        report (Dict[str, Any]): Report dictionary produced by `generate_report`. Expected keys used:
+            - session_id (str): Identifier included in the header.
+            - coverage (List[Dict]): Optional; each item should contain `name` (str),
+              `coverage_percentage` (float), and `chunk_count` (int).
+            - qa (Dict): Optional; may contain `formulas_checked`, `links_verified`,
+              `citations_found`, and `warnings` (all ints).
+            - citations (List): Optional; list of citation entries.
+        output_path (Path): Filesystem path where the composed text will be written.
     """
     lines = [
         f"ExamKit Report - {report['session_id']}",
@@ -106,11 +116,11 @@ def export_report_text(report: Dict[str, Any], output_path: Path) -> None:
 
 def export_report_json(report: Dict[str, Any], output_path: Path) -> None:
     """
-    Export report as JSON file.
-
-    Args:
-        report: Report dictionary.
-        output_path: Output path for JSON file.
+    Write the report dictionary to a JSON file at the specified output path.
+    
+    Parameters:
+        report (Dict[str, Any]): The report content to serialize.
+        output_path (Path): Filesystem path where the JSON file will be written.
     """
     from examkit.utils.io_utils import write_json
     write_json(report, output_path)

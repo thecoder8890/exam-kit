@@ -8,13 +8,13 @@ from typing import List, Optional
 
 def extract_latex_formulas(text: str) -> List[str]:
     """
-    Extract LaTeX formulas from text.
-
-    Args:
-        text: Input text containing LaTeX formulas.
-
+    Extract LaTeX formulas from the given text, returning them without surrounding dollar delimiters.
+    
+    Parameters:
+        text (str): Text that may contain LaTeX inline ($...$) or display ($$...$$) formulas.
+    
     Returns:
-        List of extracted formulas.
+        List[str]: A list of formula strings found (inline and display), with the surrounding `$`/`$$` removed.
     """
     # Match inline math: $...$
     inline = re.findall(r'\$([^\$]+)\$', text)
@@ -25,13 +25,15 @@ def extract_latex_formulas(text: str) -> List[str]:
 
 def validate_latex_formula(formula: str) -> bool:
     """
-    Basic validation of LaTeX formula syntax.
-
-    Args:
-        formula: LaTeX formula string.
-
+    Validate basic structural correctness of a LaTeX formula string.
+    
+    Performs lightweight checks for balanced braces, brackets, and parentheses, and rejects common invalid patterns such as unclosed command arguments and literal double dollar signs.
+    
+    Parameters:
+        formula (str): LaTeX formula string to validate.
+    
     Returns:
-        True if formula appears valid, False otherwise.
+        `True` if no issues are detected, `False` otherwise.
     """
     # Check for balanced braces
     if formula.count('{') != formula.count('}'):
@@ -56,28 +58,28 @@ def validate_latex_formula(formula: str) -> bool:
 
 def format_number(num: float, precision: int = 2) -> str:
     """
-    Format a number with specified precision.
-
-    Args:
-        num: Number to format.
-        precision: Decimal precision.
-
+    Format a number to a fixed number of decimal places.
+    
+    Parameters:
+        num (float): Value to format.
+        precision (int): Number of digits after the decimal point.
+    
     Returns:
-        Formatted number string.
+        str: The formatted number as a string with exactly `precision` decimal places.
     """
     return f"{num:.{precision}f}"
 
 
 def calculate_coverage_percentage(covered: int, total: int) -> float:
     """
-    Calculate coverage percentage.
-
-    Args:
-        covered: Number of covered items.
-        total: Total number of items.
-
+    Compute the percentage of covered items out of a total.
+    
+    Parameters:
+        covered (int): Number of covered items.
+        total (int): Total number of items.
+    
     Returns:
-        Coverage percentage (0-100).
+        float: Coverage percentage between 0 and 100. Returns 0.0 when `total` is 0.
     """
     if total == 0:
         return 0.0
@@ -104,12 +106,12 @@ def normalize_score(score: float, min_val: float, max_val: float) -> float:
 def extract_equation_symbols(formula: str) -> List[str]:
     """
     Extract variable symbols from a LaTeX formula.
-
-    Args:
-        formula: LaTeX formula.
-
+    
+    Parameters:
+        formula (str): The LaTeX input string to scan for symbols.
+    
     Returns:
-        List of variable symbols found.
+        List[str]: Unique symbols found — single-letter alphabetic identifiers (a–z, A–Z) and common Greek letter names (e.g. "alpha", "beta") without the leading backslash.
     """
     # Simple extraction of single-letter variables
     symbols = re.findall(r'\b([a-zA-Z])\b', formula)
@@ -121,12 +123,9 @@ def extract_equation_symbols(formula: str) -> List[str]:
 def is_numeric(value: str) -> bool:
     """
     Check if a string represents a numeric value.
-
-    Args:
-        value: String to check.
-
+    
     Returns:
-        True if numeric, False otherwise.
+        True if the string can be parsed as a float, False otherwise.
     """
     try:
         float(value)

@@ -15,14 +15,10 @@ except ImportError:
 
 def extract_text_with_ocr(image_path: Path, logger: logging.Logger) -> str:
     """
-    Extract text from image using Tesseract OCR.
-
-    Args:
-        image_path: Path to image file.
-        logger: Logger instance.
-
+    Extracts text from the image at the given path using Tesseract OCR.
+    
     Returns:
-        Extracted text.
+        Extracted text from the image, or an empty string if Tesseract is unavailable or OCR fails.
     """
     if not TESSERACT_AVAILABLE:
         logger.warning("Tesseract not available, OCR skipped")
@@ -45,14 +41,13 @@ def extract_text_with_ocr(image_path: Path, logger: logging.Logger) -> str:
 
 def get_ocr_confidence(image_path: Path, logger: logging.Logger) -> float:
     """
-    Get OCR confidence score for an image.
-
-    Args:
-        image_path: Path to image file.
-        logger: Logger instance.
-
+    Compute the average OCR confidence for the given image.
+    
+    Parameters:
+        image_path (Path): Path to the image file to analyze.
+    
     Returns:
-        Confidence score (0-100).
+        float: Average confidence score between 0 and 100. Returns 0.0 if OCR is unavailable, no valid confidences are found, or an error occurs.
     """
     if not TESSERACT_AVAILABLE:
         return 0.0
@@ -74,14 +69,16 @@ def get_ocr_confidence(image_path: Path, logger: logging.Logger) -> float:
 
 def preprocess_image_for_ocr(image_path: Path, output_path: Path) -> Path:
     """
-    Preprocess image to improve OCR accuracy.
-
-    Args:
-        image_path: Path to input image.
-        output_path: Path for preprocessed image.
-
+    Prepare an image for OCR by converting it to grayscale, boosting contrast, and applying sharpening.
+    
+    If TESSERACT_AVAILABLE is False, the function returns the original input path without modifying or creating a file.
+    
+    Parameters:
+        image_path (Path): Path to the input image file.
+        output_path (Path): Destination path for the preprocessed image.
+    
     Returns:
-        Path to preprocessed image.
+        Path: Path to the preprocessed image, or the original `image_path` if OCR is unavailable.
     """
     if not TESSERACT_AVAILABLE:
         return image_path
