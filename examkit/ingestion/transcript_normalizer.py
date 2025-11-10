@@ -12,13 +12,20 @@ from examkit.utils.timecode import parse_vtt_timestamp
 
 def parse_vtt(content: str) -> List[Dict[str, Any]]:
     """
-    Parse VTT (WebVTT) transcript format.
-
-    Args:
-        content: VTT file content.
-
+    Parse WebVTT content into a list of transcript segment dictionaries.
+    
+    Each segment represents a contiguous caption with its start and end times (in seconds) and the combined text. Empty caption blocks are omitted.
+    
+    Parameters:
+        content (str): Raw WebVTT file content.
+    
     Returns:
-        List of segment dictionaries.
+        List[Dict[str, Any]]: A list of segments where each segment has keys:
+            - "source": "transcript"
+            - "type": "vtt"
+            - "start" (float): Start time in seconds.
+            - "end" (float): End time in seconds.
+            - "text" (str): Concatenated caption text.
     """
     segments = []
     lines = content.split('\n')
@@ -60,13 +67,18 @@ def parse_vtt(content: str) -> List[Dict[str, Any]]:
 
 def parse_srt(content: str) -> List[Dict[str, Any]]:
     """
-    Parse SRT (SubRip) transcript format.
-
-    Args:
-        content: SRT file content.
-
+    Parse SubRip (SRT) formatted transcript into a list of segment dictionaries.
+    
+    Parameters:
+        content (str): Raw SRT file contents.
+    
     Returns:
-        List of segment dictionaries.
+        List[Dict[str, Any]]: A list of segments where each segment contains:
+            - "source": "transcript"
+            - "type": "srt"
+            - "start": start time in seconds (float)
+            - "end": end time in seconds (float)
+            - "text": concatenated subtitle text (str)
     """
     segments = []
     blocks = content.strip().split('\n\n')
@@ -105,13 +117,21 @@ def parse_srt(content: str) -> List[Dict[str, Any]]:
 
 def parse_txt(content: str) -> List[Dict[str, Any]]:
     """
-    Parse plain text transcript (no timestamps).
-
-    Args:
-        content: Plain text content.
-
+    Parse a plain-text transcript into paragraph segments.
+    
+    Paragraphs are split on double newlines; leading/trailing whitespace is trimmed and empty paragraphs are ignored.
+    
+    Parameters:
+        content (str): Raw transcript text.
+    
     Returns:
-        List of segment dictionaries (with dummy timestamps).
+        List[Dict[str, Any]]: A list of segment dictionaries. Each segment has:
+            - "source": "transcript"
+            - "type": "txt"
+            - "start": None
+            - "end": None
+            - "text": paragraph text
+            - "index": zero-based paragraph order
     """
     # Split into paragraphs
     paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
@@ -132,14 +152,13 @@ def parse_txt(content: str) -> List[Dict[str, Any]]:
 
 def normalize_transcript(path: Path, logger: logging.Logger) -> List[Dict[str, Any]]:
     """
-    Normalize transcript from various formats to standardized JSONL.
-
-    Args:
-        path: Path to transcript file.
-        logger: Logger instance.
-
+    Normalize a transcript file (VTT, SRT, or TXT) into a list of standardized segment dictionaries.
+    
+    Parameters:
+        path (Path): Filesystem path to the transcript file to parse.
+    
     Returns:
-        List of normalized transcript segments.
+        List[Dict[str, Any]]: A list of segment dictionaries. Segments that include `start` timestamps are sorted by start time and appear first; segments without timestamps follow.
     """
     logger.info(f"Normalizing transcript: {path}")
 

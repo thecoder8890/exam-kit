@@ -22,17 +22,17 @@ def create_flowchart(
     format: str = "png"
 ) -> Optional[Path]:
     """
-    Create a flowchart diagram.
-
-    Args:
-        nodes: List of node dictionaries with 'id' and 'label'.
-        edges: List of tuples (from_id, to_id).
-        title: Diagram title.
-        output_path: Path to save diagram.
-        format: Output format (png, svg, pdf).
-
+    Create a directed flowchart from the given nodes and edges.
+    
+    Parameters:
+        nodes: List of dictionaries each with keys 'id' (node identifier) and 'label' (display text).
+        edges: List of (from_id, to_id) tuples specifying directed connections between node ids.
+        title: Diagram title used as the graph comment.
+        output_path: Filesystem path where the diagram will be written (extension is added based on `format`). If omitted, the diagram is not written to disk.
+        format: Output file format extension to use when rendering (e.g., 'png', 'svg', 'pdf').
+    
     Returns:
-        Path to generated diagram or None.
+        Path to the generated diagram file with the chosen extension, or `None` if Graphviz is unavailable or no `output_path` was provided.
     """
     if not GRAPHVIZ_AVAILABLE:
         return None
@@ -65,17 +65,17 @@ def create_concept_map(
     format: str = "png"
 ) -> Optional[Path]:
     """
-    Create a concept map diagram.
-
-    Args:
-        concepts: List of concept names.
-        relationships: List of tuples (concept1, relation, concept2).
-        title: Diagram title.
-        output_path: Path to save diagram.
-        format: Output format.
-
+    Create an undirected concept map diagram from a list of concepts and labeled relationships.
+    
+    Parameters:
+        concepts (List[str]): Concept names to include as nodes.
+        relationships (List[tuple]): Tuples of the form (concept1, relation, concept2) describing labeled edges.
+        title (str): Diagram title.
+        output_path (Optional[Path]): Filesystem path where the diagram should be written; if omitted, no file is written.
+        format (str): Output file format/extension to render (e.g., "png", "pdf").
+    
     Returns:
-        Path to generated diagram or None.
+        Path or None: Path to the generated file including the chosen extension if the diagram was rendered; `None` if Graphviz is unavailable or no output_path was provided.
     """
     if not GRAPHVIZ_AVAILABLE:
         return None
@@ -154,15 +154,16 @@ def generate_mermaid_diagram(
     logger: logging.Logger = None
 ) -> bool:
     """
-    Generate diagram from Mermaid code using mermaid-cli.
-
-    Args:
-        mermaid_code: Mermaid diagram code.
-        output_path: Output path for diagram.
-        logger: Logger instance.
-
+    Generate a diagram from Mermaid code using the mermaid-cli tool.
+    
+    Creates a temporary `.mmd` file adjacent to `output_path`, invokes `mmdc` to render the diagram to `output_path`, and removes the temporary file on success. If `mmdc` is not available or rendering fails, no output file is produced and the function returns `False`.
+    
+    Parameters:
+        mermaid_code (str): Mermaid diagram source code.
+        output_path (Path): Destination path for the rendered diagram file.
+    
     Returns:
-        True if successful, False otherwise.
+        bool: `True` if the diagram was generated successfully, `False` otherwise.
     """
     # Check if mermaid-cli is available
     try:
@@ -194,13 +195,13 @@ def generate_mermaid_diagram(
 
 def detect_diagram_opportunity(text: str) -> Optional[str]:
     """
-    Detect if text describes a process that could be diagrammed.
-
-    Args:
-        text: Input text.
-
+    Suggests a diagram type based on keywords found in the input text.
+    
+    Parameters:
+        text (str): Text to analyze for diagram-related cues.
+    
     Returns:
-        Diagram type suggestion or None.
+        One of 'flowchart', 'concept_map', or 'hierarchy' if corresponding keywords are present in the text, otherwise None.
     """
     text_lower = text.lower()
 

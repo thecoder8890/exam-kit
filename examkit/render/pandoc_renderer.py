@@ -15,16 +15,16 @@ def render_markdown_to_pdf_pandoc(
     logger: logging.Logger = None
 ) -> bool:
     """
-    Render markdown to PDF using Pandoc.
-
-    Args:
-        markdown_path: Path to markdown file.
-        output_pdf: Path for output PDF.
-        options: Additional Pandoc options.
-        logger: Logger instance.
-
+    Render a Markdown file to PDF using Pandoc.
+    
+    Parameters:
+        markdown_path (Path): Path to the input Markdown file.
+        output_pdf (Path): Path where the generated PDF will be written.
+        options (Optional[List[str]]): Additional Pandoc command-line options to append.
+        logger (logging.Logger, optional): Logger to receive informational and error messages.
+    
     Returns:
-        True if successful, False otherwise.
+        bool: `True` if Pandoc produced the PDF successfully, `False` otherwise.
     """
     if logger:
         logger.info(f"Rendering with Pandoc: {markdown_path} -> {output_pdf}")
@@ -64,10 +64,10 @@ def render_markdown_to_pdf_pandoc(
 
 def check_pandoc_installed() -> bool:
     """
-    Check if Pandoc is installed.
-
+    Determine whether Pandoc is available on the system PATH.
+    
     Returns:
-        True if installed, False otherwise.
+        True if running `pandoc --version` succeeds with exit code 0, False otherwise.
     """
     try:
         result = subprocess.run(

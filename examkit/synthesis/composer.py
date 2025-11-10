@@ -27,15 +27,20 @@ from examkit.render.typst_renderer import compile_typst_to_pdf
 
 def load_processed_data(session_id: str, cache_dir: Path, logger: logging.Logger) -> Dict[str, List]:
     """
-    Load processed data from cache.
-
-    Args:
-        session_id: Session identifier.
-        cache_dir: Cache directory.
-        logger: Logger instance.
-
+    Load cached session data for transcripts, slides, and exam items.
+    
+    Reads JSONL files named <session_id>_transcript.jsonl, <session_id>_slides.jsonl,
+    and <session_id>_exam.jsonl from the provided cache directory if they exist,
+    logging the number of items loaded for each present file.
+    
+    Parameters:
+        session_id (str): Session identifier used to locate cache files.
+        cache_dir (Path): Directory containing cached JSONL files.
+        logger (logging.Logger): Logger used to report load counts and warnings.
+    
     Returns:
-        Dictionary with loaded data.
+        dict: A dictionary with keys "transcript", "slides", and "exam", each mapped
+        to a list of loaded items (empty list if the corresponding cache file is absent).
     """
     data = {
         "transcript": [],
@@ -71,16 +76,25 @@ def build_pipeline(
     logger: logging.Logger
 ) -> Dict[str, Any]:
     """
-    Main build pipeline for generating study materials.
-
-    Args:
-        config: ExamKit configuration.
-        session_id: Session identifier.
-        output_pdf_path: Path for output PDF.
-        logger: Logger instance.
-
+    Orchestrates the end-to-end generation of study materials (notes, citations, coverage, and optional PDF) for a given session.
+    
+    Parameters:
+        config (ExamKitConfig): Configuration for embedding, retrieval, LLM, and output behavior.
+        session_id (str): Identifier for the session whose processed data will be used.
+        output_pdf_path (Path): Target path for the generated PDF output.
+        logger (logging.Logger): Logger used for progress and error reporting.
+    
     Returns:
-        Dictionary with output paths and metadata.
+        result (Dict[str, Any]): Summary of produced artifacts and metadata with keys:
+            - "pdf_path": string path to the produced PDF file.
+            - "notes_path": string path to the generated Markdown notes.
+            - "citations_path": string path to the exported citations JSON.
+            - "coverage_path": string path to the exported coverage CSV.
+            - "topics_processed": number of topic sections that were produced.
+            - "total_citations": total count of citations recorded by the CitationManager.
+    
+    Raises:
+        ValueError: If no processed input chunks are found for the session (instructs to run ingestion first).
     """
     logger.info(f"Starting build pipeline for session: {session_id}")
 

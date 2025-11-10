@@ -14,14 +14,18 @@ except ImportError:
 
 def load_spacy_model(model_name: str = "en_core_web_sm", logger: logging.Logger = None):
     """
-    Load spaCy model.
-
-    Args:
-        model_name: SpaCy model name.
-        logger: Logger instance.
-
+    Load and return a spaCy language model by name.
+    
+    Parameters:
+        model_name (str): Name of the spaCy model to load (e.g., "en_core_web_sm").
+        logger (logging.Logger, optional): Logger for informational and error messages.
+    
     Returns:
-        Loaded spaCy model.
+        nlp: Loaded spaCy language object.
+    
+    Raises:
+        ImportError: If spaCy is not installed.
+        OSError: If the specified model is not found.
     """
     if not SPACY_AVAILABLE:
         raise ImportError("spaCy not available. Install with: pip install spacy")
@@ -39,14 +43,14 @@ def load_spacy_model(model_name: str = "en_core_web_sm", logger: logging.Logger 
 
 def split_into_sentences_spacy(text: str, nlp) -> List[str]:
     """
-    Split text into sentences using spaCy.
-
-    Args:
-        text: Input text.
-        nlp: SpaCy model.
-
+    Split the input text into sentence strings using a spaCy pipeline.
+    
+    Parameters:
+        text (str): Text to segment into sentences.
+        nlp: A spaCy language pipeline or model (e.g., the object returned by `spacy.load(...)`) used to perform sentence segmentation.
+    
     Returns:
-        List of sentences.
+        List[str]: Sentence strings extracted from the text, each stripped of surrounding whitespace.
     """
     doc = nlp(text)
     return [sent.text.strip() for sent in doc.sents]
@@ -58,15 +62,17 @@ def split_into_chunks(
     logger: logging.Logger = None
 ) -> List[Dict[str, Any]]:
     """
-    Split segments into manageable chunks for embedding.
-
-    Args:
-        segments: List of text segments.
-        max_chunk_size: Maximum chunk size in characters.
-        logger: Logger instance.
-
+    Breaks segments into character-limited chunks by splitting long texts at word boundaries.
+    
+    Long segments (text length > max_chunk_size) are split into smaller chunks that copy the original segment, set the chunked text under the "text" key, and mark the chunk with "is_split" = True. Segments whose text length is less than or equal to max_chunk_size are returned unchanged.
+    
+    Parameters:
+        segments (List[Dict[str, Any]]): List of segment dictionaries; each dictionary is expected to contain a "text" key.
+        max_chunk_size (int): Maximum allowed chunk size in characters.
+        logger (logging.Logger, optional): Optional logger used to record chunking summary.
+    
     Returns:
-        List of chunked segments.
+        List[Dict[str, Any]]: List of segment dictionaries including original and generated chunk dictionaries (generated chunks have "is_split" = True).
     """
     chunks = []
 
@@ -116,14 +122,16 @@ def merge_short_segments(
     min_length: int = 50
 ) -> List[Dict[str, Any]]:
     """
-    Merge very short segments for better context.
-
-    Args:
-        segments: List of segments.
-        min_length: Minimum segment length.
-
+    Merge consecutive short text segments into larger segments to preserve context.
+    
+    Segments with a "text" length less than `min_length` are concatenated (space-separated) into a single segment. The merged segment is created by copying the first buffered segment, replacing its "text" with the concatenated text and setting "is_merged" to True.
+    
+    Parameters:
+        segments (List[Dict[str, Any]]): List of segment dictionaries; each should contain a "text" key.
+        min_length (int): Minimum number of characters for a segment to be considered "long" and not merged.
+    
     Returns:
-        List of merged segments.
+        List[Dict[str, Any]]: A list of segments where consecutive short segments have been merged. Merged segments include an "is_merged" key set to True.
     """
     if not segments:
         return []

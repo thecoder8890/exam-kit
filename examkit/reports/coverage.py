@@ -15,15 +15,21 @@ def generate_coverage_report(
     logger: logging.Logger = None
 ) -> pd.DataFrame:
     """
-    Generate topic coverage report.
-
-    Args:
-        coverage_data: List of coverage dictionaries.
-        output_path: Path to save CSV report.
-        logger: Logger instance.
-
+    Create a topic coverage report from coverage_data and write it to output_path as a CSV.
+    
+    The function constructs a DataFrame from coverage_data, sorts it in descending order by the
+    "coverage_percentage" column if present, ensures the parent directory of output_path exists,
+    and writes the DataFrame to CSV without an index. If a logger is provided, an info message
+    is emitted with the saved path.
+    
+    Parameters:
+        coverage_data: Iterable of dictionaries describing topics; if a dictionary contains a
+            "coverage_percentage" key it will be used for sorting. Each item typically includes
+            a topic identifier (e.g., "name") and its coverage percentage.
+        output_path: Filesystem path where the CSV report will be written.
+    
     Returns:
-        DataFrame with coverage data.
+        pd.DataFrame: The DataFrame created (and possibly sorted) from coverage_data.
     """
     df = pd.DataFrame(coverage_data)
 
@@ -43,13 +49,13 @@ def generate_coverage_report(
 
 def calculate_overall_coverage(coverage_data: List[Dict[str, Any]]) -> Dict[str, float]:
     """
-    Calculate overall coverage statistics.
-
-    Args:
-        coverage_data: List of coverage dictionaries.
-
+    Compute summary statistics (mean, median, minimum, and maximum) for topic coverage percentages.
+    
+    Parameters:
+        coverage_data (List[Dict[str, Any]]): Sequence of records where each record contains a `coverage_percentage` numeric value.
+    
     Returns:
-        Dictionary with overall statistics.
+        Dict[str, float]: Dictionary with keys `"mean"`, `"median"`, `"min"`, and `"max"` mapping to their respective coverage values. If `coverage_data` is empty, all values are `0.0`.
     """
     if not coverage_data:
         return {"mean": 0.0, "median": 0.0, "min": 0.0, "max": 0.0}
@@ -90,13 +96,16 @@ def identify_coverage_gaps(
 
 def generate_coverage_summary(coverage_data: List[Dict[str, Any]]) -> str:
     """
-    Generate a text summary of coverage.
-
-    Args:
-        coverage_data: List of coverage dictionaries.
-
+    Produce a human-readable summary of topic coverage statistics and low-coverage topics.
+    
+    Parameters:
+        coverage_data (List[Dict[str, Any]]): List of topic coverage records. Each record should include a
+            `coverage_percentage` numeric value and a `name` string used when listing gaps.
+    
     Returns:
-        Text summary.
+        summary (str): Multi-line text containing total topics, mean, median, min/max coverage, and a
+            list of topics with coverage below 10% (if any). If `coverage_data` is empty, returns
+            "No coverage data available.".
     """
     if not coverage_data:
         return "No coverage data available."

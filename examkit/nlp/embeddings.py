@@ -24,14 +24,16 @@ except ImportError:
 
 def load_embedding_model(model_name: str = "all-MiniLM-L6-v2", logger: logging.Logger = None):
     """
-    Load sentence-transformers model.
-
-    Args:
-        model_name: Model name.
-        logger: Logger instance.
-
+    Load a SentenceTransformer embedding model by name.
+    
+    Parameters:
+        model_name (str): Identifier of the SentenceTransformer model to load (e.g., "all-MiniLM-L6-v2").
+    
     Returns:
-        Loaded model.
+        The instantiated `SentenceTransformer` model.
+    
+    Raises:
+        ImportError: If the `sentence-transformers` package is not available.
     """
     if not SENTENCE_TRANSFORMERS_AVAILABLE:
         raise ImportError("sentence-transformers not available")
@@ -50,16 +52,12 @@ def generate_embeddings(
     logger: logging.Logger = None
 ) -> np.ndarray:
     """
-    Generate embeddings for a list of texts.
-
-    Args:
-        texts: List of text strings.
-        model: SentenceTransformer model.
-        batch_size: Batch size for encoding.
-        logger: Logger instance.
-
+    Generate embeddings for each input text using the provided sentence-transformer model.
+    
+    Each row in the returned array corresponds to the embedding for the text at the same position in `texts`, preserving order.
+    
     Returns:
-        Numpy array of embeddings.
+        np.ndarray: Array of embeddings where row i is the embedding for texts[i].
     """
     if logger:
         logger.info(f"Generating embeddings for {len(texts)} texts")
@@ -80,15 +78,17 @@ def create_faiss_index(
     logger: logging.Logger = None
 ) -> Any:
     """
-    Create FAISS index from embeddings.
-
-    Args:
-        embeddings: Numpy array of embeddings.
-        dim: Embedding dimension.
-        logger: Logger instance.
-
+    Create a FAISS flat L2 index and add the provided embedding vectors.
+    
+    Parameters:
+        embeddings (np.ndarray): Array of vectors to index.
+        dim (int): Dimensionality of each embedding vector.
+    
     Returns:
-        FAISS index.
+        faiss_index: FAISS IndexFlatL2 instance containing the provided vectors.
+    
+    Raises:
+        ImportError: If `faiss` is not available.
     """
     if not FAISS_AVAILABLE:
         raise ImportError("faiss not available")
@@ -105,13 +105,13 @@ def create_faiss_index(
 
 def save_index(index: Any, index_path: Path, metadata: Dict[str, Any], metadata_path: Path) -> None:
     """
-    Save FAISS index and metadata.
-
-    Args:
-        index: FAISS index.
-        index_path: Path to save index.
-        metadata: Metadata dictionary.
-        metadata_path: Path to save metadata.
+    Persist a FAISS index and its associated metadata to disk.
+    
+    Parameters:
+        index: FAISS index instance to save.
+        index_path (Path): Filesystem path where the FAISS index file will be written.
+        metadata (Dict[str, Any]): Dictionary of metadata associated with the index (for example, mapping vector identifiers to records).
+        metadata_path (Path): Filesystem path where the metadata will be serialized and saved.
     """
     # Save FAISS index
     faiss.write_index(index, str(index_path))
@@ -123,14 +123,14 @@ def save_index(index: Any, index_path: Path, metadata: Dict[str, Any], metadata_
 
 def load_index(index_path: Path, metadata_path: Path) -> tuple:
     """
-    Load FAISS index and metadata.
-
-    Args:
-        index_path: Path to FAISS index.
-        metadata_path: Path to metadata file.
-
+    Load a FAISS index and its associated metadata from disk.
+    
+    Parameters:
+        index_path (Path): Path to the FAISS index file.
+        metadata_path (Path): Path to the pickled metadata file.
+    
     Returns:
-        Tuple of (index, metadata).
+        tuple: (index, metadata) where `index` is a FAISS Index instance and `metadata` is the Python object restored from the metadata file.
     """
     index = faiss.read_index(str(index_path))
 
@@ -148,17 +148,19 @@ def search_similar(
     top_k: int = 5
 ) -> List[Dict[str, Any]]:
     """
-    Search for similar texts using FAISS.
-
-    Args:
-        query: Query text.
-        model: SentenceTransformer model.
-        index: FAISS index.
-        metadata: List of metadata dicts for each indexed text.
-        top_k: Number of results to return.
-
+    Finds metadata entries most similar to a query using a FAISS index.
+    
+    Parameters:
+        query (str): Text query to search for.
+        model: SentenceTransformer instance used to encode the query into an embedding.
+        index: FAISS index containing the indexed embeddings.
+        metadata (List[Dict[str, Any]]): List of metadata dictionaries aligned by position with the indexed embeddings.
+        top_k (int): Number of top results to return.
+    
     Returns:
-        List of similar items with scores.
+        List[Dict[str, Any]]: List of metadata dictionaries for the top matches, each augmented with:
+            - "distance" (float): L2 distance between the query embedding and the matched vector.
+            - "rank" (int): 1-based rank (1 is the closest).
     """
     # Generate query embedding
     query_embedding = model.encode([query], convert_to_numpy=True)

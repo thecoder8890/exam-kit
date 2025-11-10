@@ -44,10 +44,15 @@ def ingest(
     log_level: str = typer.Option("INFO", "--log-level", "-l", help="Logging level")
 ) -> None:
     """
-    Ingest and preprocess input files (video, transcript, slides, exam).
-
-    Validates inputs, extracts audio with ffmpeg, normalizes transcripts,
-    parses slides and exam papers, and saves processed data to cache.
+    Run the ingestion pipeline to preprocess input files and populate the cache.
+    
+    Loads the manifest, invokes the ingestion pipeline to process videos, transcripts,
+    slides, and exam files, and writes processed artifacts to the specified cache
+    directory while printing status to the console. On failure the function logs the
+    error and exits the process with code 1.
+     
+    Raises:
+    	typer.Exit: Exits with code 1 when ingestion fails.
     """
     logger = setup_logging(level=log_level, log_file=Path("logs/ingest.log"))
     logger.info("Starting ingestion pipeline")
@@ -99,10 +104,9 @@ def build(
     log_level: str = typer.Option("INFO", "--log-level", "-l", help="Logging level")
 ) -> None:
     """
-    Build exam-ready PDF from processed inputs.
-
-    Runs the full pipeline: embeddings → topic mapping → RAG synthesis
-    with Ollama → diagrams → templating → Typst/Pandoc rendering.
+    Build an exam-ready PDF for a session using the provided configuration and write outputs to the specified path.
+    
+    Prints the generated PDF, citations, coverage, and notes paths to the console. Exits with code 1 on error.
     """
     logger = setup_logging(level=log_level, log_file=Path("logs/build.log"))
     logger.info(f"Starting build pipeline for session: {session_id}")
@@ -193,10 +197,12 @@ def cache(
     )
 ) -> None:
     """
-    Manage cache directory.
-
-    Actions:
-      clear - Remove all cached files safely
+    Manage the local cache directory for the CLI.
+    
+    When `action` is "clear", delete the cache directory if it exists and recreate it; if the directory does not exist, print a warning. For any other `action`, print an error listing available actions and exit with a non-zero status.
+    
+    Parameters:
+        action (str): Action to perform. Supported value: "clear".
     """
     if action == "clear":
         cache_dir = Path("cache")

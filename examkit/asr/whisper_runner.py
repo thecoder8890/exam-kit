@@ -21,17 +21,27 @@ def transcribe_audio(
     logger: logging.Logger = None
 ) -> List[Dict[str, Any]]:
     """
-    Transcribe audio file using faster-whisper.
-
-    Args:
-        audio_path: Path to audio file (WAV recommended).
-        model_size: Whisper model size (tiny, base, small, medium, large).
-        language: Language code (en, es, fr, etc.).
-        vad: Enable Voice Activity Detection.
-        logger: Logger instance.
-
+    Transcribe an audio file into timestamped segments using faster-whisper.
+    
+    Transcribes the given audio file with the specified Whisper model and returns a list of segment dictionaries containing start/end timestamps and cleaned text.
+    
+    Parameters:
+        audio_path (Path): Path to the audio file.
+        model_size (str): Whisper model size to load (e.g., "tiny", "base", "small", "medium", "large").
+        language (str): Language code hint for transcription (e.g., "en", "es", "fr").
+        vad (bool): Whether to enable voice activity detection to filter non-speech.
+        logger (logging.Logger | None): Optional logger for informational messages.
+    
     Returns:
-        List of transcription segments.
+        List[Dict[str, Any]]: A list of segments where each segment dictionary contains:
+            - "source": "asr"
+            - "type": "whisper"
+            - "start": start time in seconds
+            - "end": end time in seconds
+            - "text": transcribed text (stripped of surrounding whitespace)
+    
+    Raises:
+        ImportError: If faster-whisper is not available.
     """
     if not WHISPER_AVAILABLE:
         raise ImportError("faster-whisper not available. Install with: pip install faster-whisper")
@@ -75,16 +85,21 @@ def transcribe_with_timestamps(
     logger: logging.Logger = None
 ) -> Dict[str, Any]:
     """
-    Transcribe audio with detailed timestamp information.
-
-    Args:
-        audio_path: Path to audio file.
-        model_size: Whisper model size.
-        language: Language code.
-        logger: Logger instance.
-
+    Transcribe an audio file and return timestamped segments and summary metadata.
+    
+    Parameters:
+        audio_path (Path): Path to the input audio file.
+        model_size (str): Whisper model size identifier (e.g., "small").
+        language (str): ISO language code to use for transcription.
+    
     Returns:
-        Dictionary with transcription and metadata.
+        result (dict): Dictionary containing:
+            - audio_file (str): String path of the input audio file.
+            - model (str): Model size used.
+            - language (str): Language code used.
+            - segments (List[dict]): List of segment dictionaries each with keys `source`, `type`, `start`, `end`, and `text`.
+            - total_duration (float): End time of the last segment in seconds, or 0.0 if no segments.
+            - total_segments (int): Number of segments.
     """
     segments = transcribe_audio(audio_path, model_size, language, True, logger)
 
@@ -102,11 +117,14 @@ def transcribe_with_timestamps(
 
 def export_to_vtt(segments: List[Dict[str, Any]], output_path: Path) -> None:
     """
-    Export transcription segments to VTT format.
-
-    Args:
-        segments: List of transcription segments.
-        output_path: Path for output VTT file.
+    Write transcription segments to a WebVTT file at the given path.
+    
+    Each segment must be a mapping containing keys "start" (seconds, number), "end" (seconds, number)
+    and "text" (string). The function creates or overwrites the file at output_path and writes
+    a valid WEBVTT document where each segment is numbered and formatted as a time range with text.
+    Parameters:
+        segments (List[Dict[str, Any]]): Ordered transcription segments with "start", "end", and "text".
+        output_path (Path): Filesystem path to write the .vtt file; existing file will be overwritten.
     """
     from examkit.utils.timecode import seconds_to_timecode
 

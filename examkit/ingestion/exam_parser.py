@@ -12,13 +12,15 @@ import fitz  # PyMuPDF
 
 def extract_marks(text: str) -> int:
     """
-    Extract marks from text using common patterns.
-
-    Args:
-        text: Text containing marks information.
-
+    Extract the numeric marks present in a text line using common bracketed patterns.
+    
+    Recognized patterns include forms like "[5 marks]", "(5 marks)", "[5]", and "(5)" (case-insensitive). The first matching numeric value is returned.
+    
+    Parameters:
+        text (str): Input text that may contain marks.
+    
     Returns:
-        Number of marks (0 if not found).
+        int: Number of marks found, or 0 if no marks are detected.
     """
     # Common patterns: [5 marks], (5 marks), [5], (5)
     patterns = [
@@ -38,13 +40,24 @@ def extract_marks(text: str) -> int:
 
 def parse_exam_structure(text: str) -> List[Dict[str, Any]]:
     """
-    Parse exam structure from text.
-
-    Args:
-        text: Exam paper text content.
-
+    Extract a structured list of questions and their parts from raw exam text.
+    
+    Parameters:
+        text (str): Full textual content of an exam paper (may contain multiple lines).
+    
     Returns:
-        List of question dictionaries.
+        List[Dict[str, Any]]: A list of question dictionaries. Each question dictionary includes the keys:
+            - `source`: origin identifier (e.g., "exam")
+            - `section`: section letter if detected (e.g., "A") or None
+            - `question_id`: string identifier (e.g., "Q1")
+            - `question_number`: integer question number
+            - `text`: concatenated text of the question
+            - `parts`: list of part dictionaries
+            - `marks`: numeric marks extracted for the question
+        Each part dictionary includes:
+            - `part_id`: identifier for the part (e.g., "a", "i")
+            - `text`: concatenated text of the part
+            - `marks`: numeric marks extracted for the part
     """
     questions = []
     lines = text.split('\n')
@@ -114,14 +127,13 @@ def parse_exam_structure(text: str) -> List[Dict[str, Any]]:
 
 def parse_exam(path: Path, logger: logging.Logger) -> List[Dict[str, Any]]:
     """
-    Parse exam paper PDF.
-
-    Args:
-        path: Path to exam PDF file.
-        logger: Logger instance.
-
+    Parse an exam PDF and return its extracted question structure.
+    
+    Parameters:
+        path (Path): Filesystem path to the exam PDF.
+    
     Returns:
-        List of question dictionaries.
+        List[Dict[str, Any]]: A list of question dictionaries. Each dictionary includes keys such as `source`, `section`, `question_id`, `question_number`, `text`, `parts` (a list of part dictionaries with `part_id`, `text`, and `marks`), and `marks`.
     """
     logger.info(f"Parsing exam paper: {path}")
 

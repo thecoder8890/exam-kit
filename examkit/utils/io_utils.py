@@ -10,13 +10,13 @@ from typing import Any, Dict, List
 
 def ensure_dir(path: Path) -> Path:
     """
-    Ensure a directory exists, creating it if necessary.
-
-    Args:
-        path: Directory path to ensure.
-
+    Ensure the directory at the given path exists, creating parent directories as needed.
+    
+    Parameters:
+        path (Path): Directory path to ensure.
+    
     Returns:
-        The directory path.
+        Path: The same path that was provided.
     """
     path.mkdir(parents=True, exist_ok=True)
     return path
@@ -24,13 +24,10 @@ def ensure_dir(path: Path) -> Path:
 
 def read_json(path: Path) -> Dict[str, Any]:
     """
-    Read and parse a JSON file.
-
-    Args:
-        path: Path to JSON file.
-
+    Load and return the JSON object stored at the given file path.
+    
     Returns:
-        Parsed JSON data as dictionary.
+        A dictionary representing the parsed JSON content of the file.
     """
     with open(path, "r") as f:
         return json.load(f)
@@ -38,12 +35,12 @@ def read_json(path: Path) -> Dict[str, Any]:
 
 def write_json(data: Dict[str, Any], path: Path, indent: int = 2) -> None:
     """
-    Write data to a JSON file.
-
-    Args:
-        data: Data to write.
-        path: Output path.
-        indent: JSON indentation level.
+    Write a mapping to the given file as JSON, creating the parent directory if it does not exist.
+    
+    Parameters:
+        data (Dict[str, Any]): Mapping to serialize to JSON.
+        path (Path): Destination file path; the parent directory will be created if missing.
+        indent (int): Number of spaces to use for JSON indentation.
     """
     ensure_dir(path.parent)
     with open(path, "w") as f:
@@ -52,13 +49,13 @@ def write_json(data: Dict[str, Any], path: Path, indent: int = 2) -> None:
 
 def read_jsonl(path: Path) -> List[Dict[str, Any]]:
     """
-    Read a JSONL (JSON Lines) file.
-
-    Args:
-        path: Path to JSONL file.
-
+    Load objects from a JSON Lines (JSONL) file, parsing each non-empty line as JSON.
+    
+    Parameters:
+        path (Path): Path to the JSONL file to read.
+    
     Returns:
-        List of dictionaries, one per line.
+        List[Dict[str, Any]]: A list of objects parsed from each non-empty line in the file.
     """
     data = []
     with open(path, "r") as f:
@@ -71,11 +68,13 @@ def read_jsonl(path: Path) -> List[Dict[str, Any]]:
 
 def write_jsonl(data: List[Dict[str, Any]], path: Path) -> None:
     """
-    Write data to a JSONL file.
-
-    Args:
-        data: List of dictionaries to write.
-        path: Output path.
+    Write a list of dictionaries to a newline-delimited JSON (JSONL) file.
+    
+    Each dictionary is serialized as a single JSON object on its own line using UTF-8-compatible output (serialization uses `ensure_ascii=False`). The parent directory of `path` will be created if it does not exist.
+    
+    Parameters:
+        data (List[Dict[str, Any]]): List of JSON-serializable dictionaries to write, one per line.
+        path (Path): Destination file path for the JSONL output.
     """
     ensure_dir(path.parent)
     with open(path, "w") as f:
@@ -97,14 +96,14 @@ def copy_file(src: Path, dst: Path) -> None:
 
 def read_text(path: Path, encoding: str = "utf-8") -> str:
     """
-    Read text file contents.
-
-    Args:
-        path: Path to text file.
-        encoding: Text encoding.
-
+    Read the entire contents of a text file.
+    
+    Parameters:
+        path (Path): Path to the text file.
+        encoding (str): File encoding to use; defaults to "utf-8".
+    
     Returns:
-        File contents as string.
+        str: The file contents.
     """
     with open(path, "r", encoding=encoding) as f:
         return f.read()

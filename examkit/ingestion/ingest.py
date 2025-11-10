@@ -14,13 +14,16 @@ from examkit.utils.io_utils import ensure_dir, write_json
 
 def validate_manifest(manifest: Dict[str, Any]) -> bool:
     """
-    Validate manifest structure and file existence.
-
-    Args:
-        manifest: Manifest dictionary.
-
+    Validate that a manifest contains required fields and that its 'inputs' value is a dictionary.
+    
+    Parameters:
+        manifest (Dict[str, Any]): Manifest data expected to include at least the keys `"session_id"` and `"inputs"`.
+    
     Returns:
-        True if valid, raises ValueError otherwise.
+        bool: `True` if the manifest contains the required keys and `'inputs'` is a dictionary.
+    
+    Raises:
+        ValueError: If a required key is missing or if `manifest["inputs"]` is not a dictionary.
     """
     required_keys = ["session_id", "inputs"]
     for key in required_keys:
@@ -36,15 +39,17 @@ def validate_manifest(manifest: Dict[str, Any]) -> bool:
 
 def extract_audio_from_video(video_path: Path, output_path: Path, logger: logging.Logger) -> Path:
     """
-    Extract audio from video file using ffmpeg.
-
-    Args:
-        video_path: Path to input video file.
-        output_path: Path for output WAV file.
-        logger: Logger instance.
-
+    Extract audio from a video file and save it as a 16 kHz mono PCM WAV.
+    
+    Parameters:
+        video_path (Path): Path to the input video file.
+        output_path (Path): Destination path for the extracted WAV file; the function will create the parent directory if needed.
+    
     Returns:
-        Path to extracted audio file.
+        Path: Path to the extracted audio file.
+    
+    Raises:
+        ffmpeg.Error: If FFmpeg fails during extraction.
     """
     logger.info(f"Extracting audio from {video_path}")
 
@@ -76,15 +81,18 @@ def ingest_pipeline(
     logger: logging.Logger
 ) -> Dict[str, Any]:
     """
-    Run the complete ingestion pipeline.
-
-    Args:
-        manifest: Manifest describing input files.
-        cache_dir: Directory for cached/processed files.
-        logger: Logger instance.
-
+    Run the ingestion pipeline for a session and produce processed outputs in the cache directory.
+    
+    Parameters:
+        manifest (Dict[str, Any]): Manifest containing at least "session_id" and an "inputs" mapping of optional keys: "video", "transcript", "slides", "exam".
+        cache_dir (Path): Directory where processed files and the normalized manifest will be written.
+        logger (logging.Logger): Logger used for informational and warning messages.
+    
     Returns:
-        Dictionary with paths to processed files.
+        result (Dict[str, Any]): Dictionary with:
+            - "session_id" (str): The manifest's session identifier.
+            - "processed_files" (Dict[str, str]): Mapping of output types ("audio", "transcript", "slides", "exam") to their file paths in the cache for inputs that were present and processed.
+            - "normalized_manifest" (str): Path to the written normalized manifest JSON in the cache.
     """
     from examkit.ingestion.transcript_normalizer import normalize_transcript
     from examkit.ingestion.slides_parser import parse_slides

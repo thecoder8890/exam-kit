@@ -12,10 +12,12 @@ import requests
 
 def check_ollama_available() -> bool:
     """
-    Check if Ollama is available.
-
+    Determine whether a local Ollama HTTP service is reachable.
+    
+    Performs a short HTTP GET to the local /api/tags endpoint and treats an HTTP 200 response as available.
+    
     Returns:
-        True if available, False otherwise.
+        `True` if the local Ollama service responds with HTTP 200, `False` otherwise.
     """
     try:
         response = requests.get("http://localhost:11434/api/tags", timeout=2)
@@ -26,10 +28,10 @@ def check_ollama_available() -> bool:
 
 def list_models() -> list:
     """
-    List available Ollama models.
-
+    Retrieve names of models available from the local Ollama API.
+    
     Returns:
-        List of model names.
+        list: Model name strings. Returns an empty list if the Ollama API is unreachable or does not return a 200 response.
     """
     try:
         response = requests.get("http://localhost:11434/api/tags", timeout=5)
@@ -51,19 +53,20 @@ def generate_completion(
     logger: logging.Logger = None
 ) -> str:
     """
-    Generate completion using Ollama.
-
-    Args:
-        prompt: User prompt.
-        model: Model name.
-        system_prompt: System prompt.
-        temperature: Sampling temperature.
-        max_tokens: Maximum tokens to generate.
-        offline: Enforce offline mode.
-        logger: Logger instance.
-
+    Generate a text completion from a local Ollama model.
+    
+    Parameters:
+        prompt (str): The user prompt to send to the model.
+        system_prompt (Optional[str]): Optional system-level prompt to guide generation.
+        temperature (float): Sampling temperature controlling randomness; higher values increase randomness.
+        max_tokens (int): Maximum number of tokens to generate.
+        offline (bool): If True, require a local Ollama server to be available before attempting generation.
+    
     Returns:
-        Generated text.
+        str: The generated text produced by the model.
+    
+    Raises:
+        RuntimeError: If offline is True and the local Ollama server is unavailable, or if the HTTP request to Ollama fails.
     """
     if offline and not check_ollama_available():
         raise RuntimeError("Ollama not available. Start with: ollama serve")
@@ -112,17 +115,20 @@ def generate_chat_completion(
     logger: logging.Logger = None
 ) -> str:
     """
-    Generate chat completion using Ollama.
-
-    Args:
-        messages: List of message dicts with 'role' and 'content'.
-        model: Model name.
-        temperature: Sampling temperature.
-        max_tokens: Maximum tokens to generate.
-        logger: Logger instance.
-
+    Generate a chat response from the local Ollama model for a sequence of messages.
+    
+    Parameters:
+        messages (list): List of message dictionaries each containing 'role' (e.g., 'user'|'assistant'|'system') and 'content' (str).
+        model (str): Ollama model identifier to use.
+        temperature (float): Sampling temperature for response generation.
+        max_tokens (int): Maximum number of tokens to generate.
+        logger (logging.Logger, optional): Logger for error/debug messages (not required).
+    
     Returns:
-        Generated response.
+        str: The generated message content (empty string if none present).
+    
+    Raises:
+        RuntimeError: If Ollama is not available or the HTTP request to Ollama fails.
     """
     if not check_ollama_available():
         raise RuntimeError("Ollama not available")
@@ -154,14 +160,13 @@ def generate_chat_completion(
 
 def pull_model(model: str, logger: logging.Logger = None) -> bool:
     """
-    Pull a model using Ollama CLI.
-
-    Args:
-        model: Model name to pull.
-        logger: Logger instance.
-
+    Pull the specified Ollama model via the local Ollama CLI.
+    
+    Parameters:
+        model (str): Name of the model to pull.
+    
     Returns:
-        True if successful, False otherwise.
+        True if the CLI reported success (exit code 0), False otherwise.
     """
     if logger:
         logger.info(f"Pulling Ollama model: {model}")

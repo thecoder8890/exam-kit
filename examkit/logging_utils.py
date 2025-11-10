@@ -19,15 +19,15 @@ def setup_logging(
     rich_output: bool = True
 ) -> logging.Logger:
     """
-    Configure logging for the application.
-
-    Args:
-        level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-        log_file: Optional path to log file.
-        rich_output: Whether to use Rich formatting for console output.
-
+    Configure and return the "examkit" logger with console and optional file handlers.
+    
+    Parameters:
+        level (str): Logging level name (e.g., "DEBUG", "INFO"). Invalid or unknown names default to "INFO".
+        log_file (Optional[Path]): If provided, a file handler is added and the file's parent directory will be created if necessary.
+        rich_output (bool): If True, console output is formatted with Rich; otherwise a standard stream formatter is used.
+    
     Returns:
-        Configured logger instance.
+        logging.Logger: The configured logger named "examkit".
     """
     # Convert string level to logging constant
     numeric_level = getattr(logging, level.upper(), logging.INFO)
@@ -75,12 +75,12 @@ def setup_logging(
 
 def get_logger(name: str) -> logging.Logger:
     """
-    Get a logger instance for a module.
-
-    Args:
-        name: Module name.
-
+    Retrieve a namespaced logger for the given module.
+    
+    Parameters:
+        name (str): Module name to namespace under "examkit".
+    
     Returns:
-        Logger instance.
+        logging.Logger: Logger named "examkit.<name>".
     """
     return logging.getLogger(f"examkit.{name}")

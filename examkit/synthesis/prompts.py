@@ -120,36 +120,92 @@ Worked Example:
 
 
 def render_definition_prompt(topic_name: str, context_chunks: list) -> str:
-    """Render definition prompt."""
+    """
+    Render a definition prompt for the given topic using the module's Jinja2 template.
+    
+    Parameters:
+        topic_name (str): The topic name to insert into the prompt.
+        context_chunks (list): Sequence of context chunks used to populate the prompt; each chunk is expected to include source metadata and the chunk content.
+    
+    Returns:
+        str: The rendered prompt text.
+    """
     template = Template(DEFINITION_TEMPLATE)
     return template.render(topic_name=topic_name, context_chunks=context_chunks)
 
 
 def render_derivation_prompt(topic_name: str, context_chunks: list) -> str:
-    """Render derivation prompt."""
+    """
+    Render a filled derivation prompt for a given topic using provided context chunks.
+    
+    Parameters:
+        topic_name (str): Name of the topic to derive.
+        context_chunks (list): Iterable of context chunk objects or dicts; each chunk should include source and content used to cite and support the derivation.
+    
+    Returns:
+        str: The rendered prompt text with a Derivation section and inline source citations.
+    """
     template = Template(DERIVATION_TEMPLATE)
     return template.render(topic_name=topic_name, context_chunks=context_chunks)
 
 
 def render_mistakes_prompt(topic_name: str, context_chunks: list) -> str:
-    """Render common mistakes prompt."""
+    """
+    Builds a prompt that asks for common mistakes related to a topic using the provided context chunks.
+    
+    Parameters:
+        context_chunks (list): Sequence of context items (e.g., mappings with source and content) to be embedded into the prompt as cited sources.
+    
+    Returns:
+        str: The rendered prompt text.
+    """
     template = Template(MISTAKES_TEMPLATE)
     return template.render(topic_name=topic_name, context_chunks=context_chunks)
 
 
 def render_compare_prompt(topic_a: str, topic_b: str, context_a: list, context_b: list) -> str:
-    """Render compare and contrast prompt."""
+    """
+    Builds a compare-and-contrast prompt for two topics using their context chunks.
+    
+    Parameters:
+        topic_a (str): Name of the first topic.
+        topic_b (str): Name of the second topic.
+        context_a (list): Context chunks (source/text entries) related to `topic_a`.
+        context_b (list): Context chunks (source/text entries) related to `topic_b`.
+    
+    Returns:
+        str: The rendered prompt text that instructs an LLM to compare similarities, differences,
+        appropriate usages, and provide source-cited conclusions for the two topics.
+    """
     template = Template(COMPARE_TEMPLATE)
     return template.render(topic_a=topic_a, topic_b=topic_b, context_a=context_a, context_b=context_b)
 
 
 def render_revision_prompt(topic_name: str, context_chunks: list) -> str:
-    """Render fast revision prompt."""
+    """
+    Builds a quick revision prompt for a topic using the provided context chunks.
+    
+    Parameters:
+    	topic_name (str): The topic title to include in the prompt.
+    	context_chunks (list): Sequence of context chunk objects (e.g., mappings with `source` and content) whose sources and content will be listed and cited in the prompt.
+    
+    Returns:
+    	rendered_prompt (str): The rendered revision prompt text containing a concise revision summary, key facts, a worked example, and source citations.
+    """
     template = Template(FAST_REVISION_TEMPLATE)
     return template.render(topic_name=topic_name, context_chunks=context_chunks)
 
 
 def render_example_prompt(topic_name: str, context_chunks: list) -> str:
-    """Render worked example prompt."""
+    """
+    Builds a worked-example prompt for a topic using the provided context chunks.
+    
+    Parameters:
+    	topic_name (str): The topic title to include in the prompt.
+    	context_chunks (list): Iterable of context items (each supplying content and source) to be incorporated and cited in the prompt.
+    
+    Returns:
+    	rendered_prompt (str): The prompt text produced by rendering the worked-example template with the given topic and context chunks.
+    """
     template = Template(EXAMPLE_TEMPLATE)
     return template.render(topic_name=topic_name, context_chunks=context_chunks)
